@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"path/filepath"
 	"strings"
 
@@ -98,8 +97,6 @@ func (c ShowBuildSettingsCommandModel) PrintableCmd() string {
 
 func parseBuildSettings(out string) (serialized.Object, error) {
 	settings := serialized.Object{}
-
-	reader := bufio.NewReader(strings.NewReader(out))
 	var buffer bytes.Buffer
 	
 	// PATCHED: Increased scanner buffer size to prevent "token too long" errors
