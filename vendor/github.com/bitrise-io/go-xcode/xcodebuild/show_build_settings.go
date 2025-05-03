@@ -101,34 +101,29 @@ func parseBuildSettings(out string) (serialized.Object, error) {
 
 	reader := bufio.NewReader(strings.NewReader(out))
 	var buffer bytes.Buffer
-
-	for {
-		b, isPrefix, err := reader.ReadLine()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return nil, err
-		}
-
-		lineFragment := string(b)
-		buffer.WriteString(lineFragment)
-
-		// isPrefix is set to false once a full line has been read
-		if !isPrefix {
-			line := strings.TrimSpace(buffer.String())
-
-			if split := strings.Split(line, "="); len(split) > 1 {
-				key := strings.TrimSpace(split[0])
-				value := strings.TrimSpace(strings.Join(split[1:], "="))
-				value = strings.Trim(value, `"`)
-
-				settings[key] = value
-			}
-
-			buffer.Reset()
+	
+	// PATCHED: Increased scanner buffer size to prevent "token too long" errors
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	const maxCapacity = 1024*1024 // 1MB buffer
+	buf := make([]byte, maxCapacity)
+	scanner.Buffer(buf, maxCapacity)
+	
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		
+		if split := strings.Split(line, "="); len(split) > 1 {
+			key := strings.TrimSpace(split[0])
+			value := strings.TrimSpace(strings.Join(split[1:], "="))
+			value = strings.Trim(value, `"`)
+			
+			settings[key] = value
 		}
 	}
-
+	
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan build settings: %s", err)
+	}
+	
 	return settings, nil
 }
 
