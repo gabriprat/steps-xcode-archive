@@ -2,7 +2,6 @@ package xcodebuild
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -97,7 +96,6 @@ func (c ShowBuildSettingsCommandModel) PrintableCmd() string {
 
 func parseBuildSettings(out string) (serialized.Object, error) {
 	settings := serialized.Object{}
-	var buffer bytes.Buffer
 	
 	// PATCHED: Increased scanner buffer size to prevent "token too long" errors
 	scanner := bufio.NewScanner(strings.NewReader(out))
